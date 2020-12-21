@@ -1,6 +1,7 @@
 package main
 
 import (
+    "flag"
     "html/template"
     "io/ioutil"
     "log"
@@ -22,25 +23,33 @@ type Picture struct {
 }
 
 type ListData struct {
+    Name string
     Pictures []Picture
     Dirs []Dir
 }
 
-const galleryPath = "/home/mvala/Pictures"
+const defaultGalleryPath = "/home/mvala/Pictures"
 var supportedFiles = []string{".jpg", ".jpeg", ".png"}
 
+type Conf struct {
+    galleryPath string
+}
+
 func main() {
+    var conf = &Conf{}
+    flag.StringVar(&conf.galleryPath, "photosdir", defaultGalleryPath, "default path to the gallery")
+    flag.Parse()
 
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
         //fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
-        if strings.HasPrefix(r.URL.Path, galleryPath) && isSupportedFile(r.URL.Path) {
+        if strings.HasPrefix(r.URL.Path, conf.galleryPath) && isSupportedFile(r.URL.Path) {
             if content, err := ioutil.ReadFile(r.URL.Path); err == nil {
                 if _, wErr := w.Write(content); wErr != nil {
                     log.Fatal(wErr)
                 }
             }
         } else {
-            renderTemplate(w, r)
+            renderTemplate(w, r, conf.galleryPath)
         }
     })
 
@@ -79,10 +88,10 @@ func isSupportedFile(filename string) bool {
     return false
 }
 
-func renderTemplate(w http.ResponseWriter, r *http.Request) {
+func renderTemplate(w http.ResponseWriter, r *http.Request, galleryPath string) {
     parsedTemplate, _ := template.ParseFiles("templates/index.html")
     dirs, pictures := listFiles(galleryPath + r.URL.Path)
-    err := parsedTemplate.Execute(w, ListData{Dirs: dirs, Pictures: pictures})
+    err := parsedTemplate.Execute(w, ListData{Name: galleryPath, Dirs: dirs, Pictures: pictures})
     if err != nil {
         log.Println("Error executing template :", err)
         return
