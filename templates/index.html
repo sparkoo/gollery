@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Go Template</title>
+  <style>
+    img {
+      max-width: 200px;
+      max-height: 200px;
+    }
+  </style>
+</head>
+
+<body>
+<h1>Hello</h1>
+<div>
+  <h2>Dirs</h2>
+  <ul>
+    <li><a href="../">../</a></li>
+    {{range .Dirs}}
+    <li><a href="{{.Link}}">{{.Link}}</a></li>
+    {{end}}
+  </ul>
+</div>
+<div>
+  <h2>Photos</h2>
+    {{range .Pictures}}
+      <a href="{{.Link}}"><img src="{{.Link}}"></a>
+    {{end}}
+</div>
+</body>
+
+</html>
