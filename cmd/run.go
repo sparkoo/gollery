@@ -6,6 +6,7 @@ import (
     "io/ioutil"
     "log"
     "net/http"
+    "os"
     "path"
     "strings"
 )
@@ -45,11 +46,19 @@ func main() {
         if strings.HasPrefix(r.URL.Path, conf.galleryPath) && isSupportedFile(r.URL.Path) {
             if content, err := ioutil.ReadFile(r.URL.Path); err == nil {
                 if _, wErr := w.Write(content); wErr != nil {
-                    log.Fatal(wErr)
+                    log.Println(wErr)
                 }
             }
         } else {
-            renderTemplate(w, r, conf.galleryPath)
+            reqPath := conf.galleryPath + r.URL.Path
+            reqPath = strings.TrimRight(reqPath, "/")
+            if fi, err := os.Stat(reqPath); err != nil && fi != nil {
+                if fi.IsDir() {
+                    renderTemplate(w, r, conf.galleryPath)
+                }
+            } else {
+                log.Println(reqPath, "is not dir")
+            }
         }
     })
 
